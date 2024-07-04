@@ -1,11 +1,13 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader'
 import {
   vaseUrl,
   teaTableUrl,
   classicConsoleUrl,
   woodenCrateUrl,
   spellBookUrl,
+  pureSkyUrl,
 } from '../data/urls'
 import { getRadFromAngle } from './helpers/angle'
 
@@ -15,14 +17,22 @@ export class Scene3D {
     this.height = window.innerHeight
     this.aspectRatio = this.width / this.height
 
-    this.scene = new THREE.Scene()
     this.gltfLoader = new GLTFLoader()
+    this.rgbeLoader = new RGBELoader()
 
+    this.initScene()
     this.initCamera()
     this.initRenderer()
     this.initLight()
     this.initFloor()
     this.initModels()
+  }
+  initScene() {
+    this.scene = new THREE.Scene()
+    this.rgbeLoader.load(pureSkyUrl, (texture) => {
+      this.scene.background = texture
+      this.scene.environment = texture
+    })
   }
   initCamera() {
     this.camera = new THREE.PerspectiveCamera(90, this.aspectRatio, 0.1, 1000)

@@ -10,3 +10,5 @@ export const woodenCrateUrl =
   '/assets/models/wooden_crate_1k/wooden_crate_01_1k.gltf'
 
 export const spellBookUrl = '/assets/models/spell_book/scene.gltf'
+
+export const pureSkyUrl = '/assets/images/textures/overcast_soil_puresky_2k.hdr'
