@@ -35,6 +35,7 @@ export class Scene3D {
     await this.initBookParticlesAsync()
     await this.initDragonModelAsync()
     this.initShaderCube()
+    this.initParticleCube()
 
     this.addCameraMoveEffect()
     this.addResizeEventListener()
@@ -209,6 +210,32 @@ export class Scene3D {
     this.cubeWithShader = new THREE.Mesh(cubeGeometry, cubeMaterial)
     this.cubeWithShader.position.set(-2, 5, 5)
     this.scene.add(this.cubeWithShader)
+  }
+  initParticleCube() {
+    const particleBaseMaterial = new THREE.PointsMaterial({
+      size: 0.05,
+      color: 0x0000ff,
+    })
+
+    const particleGeometry = new THREE.BufferGeometry()
+    const cubeSize = 10
+    const particlesCount = 100
+    const step = (cubeSize * 3) / particlesCount
+    const positions = []
+    for (let x = 0; x <= cubeSize; x += step) {
+      for (let y = 0; y <= cubeSize; y += step) {
+        for (let z = 0; z <= cubeSize; z += step) {
+          positions.push(x, y, z)
+        }
+      }
+    }
+    particleGeometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(positions, 3)
+    )
+    const particles = new THREE.Points(particleGeometry, particleBaseMaterial)
+    particles.position.set(0, 10, 0)
+    this.scene.add(particles)
   }
   addCameraMoveEffect() {
     this.cameraMoveEffect = new CameraMoveEffect(this.camera, 0.2, 0.1)
