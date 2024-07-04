@@ -7,29 +7,33 @@ import {
   classicConsoleUrl,
   woodenCrateUrl,
   spellBookUrl,
-  pureSkyUrl,
+  environmentUrl,
+  particle1Url,
 } from '../data/urls'
 import { getRadFromAngle } from './helpers/angle'
+import { SpellBookParticles } from './particles/spellBookParticles'
 
 export class Scene3D {
-  init() {
+  async initAsync() {
     this.width = window.innerWidth
     this.height = window.innerHeight
     this.aspectRatio = this.width / this.height
 
     this.gltfLoader = new GLTFLoader()
     this.rgbeLoader = new RGBELoader()
+    this.textureLoader = new THREE.TextureLoader()
 
     this.initScene()
     this.initCamera()
     this.initRenderer()
     this.initLight()
     this.initFloor()
-    this.initModels()
+    await this.initModelsAsync()
+    await this.initBookParticlesAsync()
   }
   initScene() {
     this.scene = new THREE.Scene()
-    this.rgbeLoader.load(pureSkyUrl, (texture) => {
+    this.rgbeLoader.load(environmentUrl, (texture) => {
       this.scene.background = texture
       this.scene.environment = texture
     })
@@ -47,6 +51,8 @@ export class Scene3D {
   }
   rendererAnimationCallback() {
     return () => {
+      this.spellBookParticles?.updateParticles()
+
       this.renderer.render(this.scene, this.camera)
     }
   }
@@ -63,37 +69,47 @@ export class Scene3D {
     floor.position.z = 5
     this.scene.add(floor)
   }
-  initModels() {
-    this.loadGltf(vaseUrl, (model) => {
-      model.scale.multiplyScalar(5)
-      model.position.set(3, 1.5, 5)
-    })
-    this.loadGltf(teaTableUrl, (model) => {
-      model.scale.multiplyScalar(3)
-      model.position.set(3, 0, 5)
-    })
-    this.loadGltf(classicConsoleUrl, (model) => {
-      model.scale.multiplyScalar(1.5)
-      model.position.set(-3, 0, 5)
-      model.rotation.y = getRadFromAngle(45)
-    })
-    this.loadGltf(woodenCrateUrl, (model) => {
-      model.scale.multiplyScalar(1.5)
-      model.position.set(0, 0, 6)
-      model.rotation.y = getRadFromAngle(-10)
-    })
-    this.loadGltf(spellBookUrl, (model) => {
-      model.scale.multiplyScalar(2)
-      model.position.set(0, 2, 7)
-    })
+  async initModelsAsync() {
+    const vase = await this.loadGltfAsync(vaseUrl)
+    vase.scale.multiplyScalar(5)
+    vase.position.set(3, 1.5, 5)
+
+    const teaTable = await this.loadGltfAsync(teaTableUrl)
+    teaTable.scale.multiplyScalar(3)
+    teaTable.position.set(3, 0, 5)
+
+    const classicConsole = await this.loadGltfAsync(classicConsoleUrl)
+    classicConsole.scale.multiplyScalar(1.5)
+    classicConsole.position.set(-3, 0, 5)
+    classicConsole.rotation.y = getRadFromAngle(45)
+
+    const woodenCrate = await this.loadGltfAsync(woodenCrateUrl)
+    woodenCrate.scale.multiplyScalar(1.5)
+    woodenCrate.position.set(0, 0, 6)
+    woodenCrate.rotation.y = getRadFromAngle(-10)
+
+    this.spellBook = await this.loadGltfAsync(spellBookUrl)
+    this.spellBook.scale.multiplyScalar(2)
+    this.spellBook.position.set(0, 2, 7)
+
+    this.scene.add(vase, teaTable, classicConsole, woodenCrate, this.spellBook)
   }
-  loadGltf(url, modifier) {
-    this.gltfLoader.load(url, (data) => {
-      const model = data.scene
-      if (modifier) {
-        modifier(model)
-      }
-      this.scene.add(model)
-    })
+  async initBookParticlesAsync() {
+    const particlesPosition = this.spellBook.position.clone()
+    particlesPosition.y += 0.5
+    const particleTexture = await this.textureLoader.loadAsync(particle1Url)
+    this.spellBookParticles = new SpellBookParticles(
+      1.2,
+      30,
+      particlesPosition,
+      0.1,
+      0x290050,
+      particleTexture
+    )
+    await this.spellBookParticles.initAsync(this.scene)
+  }
+  async loadGltfAsync(url) {
+    const data = await this.gltfLoader.loadAsync(url)
+    return data.scene
   }
 }

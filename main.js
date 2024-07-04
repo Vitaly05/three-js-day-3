@@ -9,4 +9,4 @@ if (devMode) {
 }
 
 const scene = new Scene3D()
-scene.init()
+await scene.initAsync()
