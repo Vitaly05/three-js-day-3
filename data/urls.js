@@ -15,3 +15,5 @@ export const environmentUrl =
   '/assets/images/textures/blaubeuren_church_square_2k.hdr'
 
 export const particle1Url = '/assets/images/particles/1.png'
+
+export const dragonModelUrl = '/assets/models/DragonAttenuation.glb'

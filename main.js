@@ -14,4 +14,5 @@ if (devMode) {
     'Show global light',
     scene.debugToggleGlobalLight()
   )
+  debugPanel.addCheckbox(false, 'Show dragon', scene.debugToggleDragon())
 }

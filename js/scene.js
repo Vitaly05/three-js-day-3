@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import {
   vaseUrl,
   teaTableUrl,
@@ -9,6 +10,7 @@ import {
   spellBookUrl,
   environmentUrl,
   particle1Url,
+  dragonModelUrl,
 } from '../data/urls'
 import { getRadFromAngle } from './helpers/angle'
 import { SpellBookParticles } from './particles/spellBookParticles'
@@ -30,6 +32,7 @@ export class Scene3D {
     this.initFloor()
     await this.initModelsAsync()
     await this.initBookParticlesAsync()
+    await this.initDragonModelAsync()
   }
   initScene() {
     this.scene = new THREE.Scene()
@@ -108,6 +111,53 @@ export class Scene3D {
     )
     this.spellBookParticles.init(this.scene)
   }
+  async initDragonModelAsync() {
+    this.dragonGroup = new THREE.Group()
+    const dragonModel = await this.loadGltfAsync(dragonModelUrl)
+    dragonModel.traverse((object) => {
+      if (object.isMesh) {
+        if (object.name === 'Dragon') {
+          object.material = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,
+            attenuationColor: 0xe3b716,
+            attenuationDistance: 0.4,
+            transmission: 1,
+            thickness: 3,
+            roughness: 0,
+            specularIntensity: 1,
+          })
+        }
+      }
+    })
+    this.dragonGroup.position.set(0, 1, 10)
+
+    const dragonLightTarget = new THREE.Object3D()
+    dragonLightTarget.position.set(0, 1, 11)
+
+    const dragonLight = new THREE.DirectionalLight(0x6fa8dc, 2)
+    dragonLight.position.set(1, 1.3, 12)
+    dragonLight.target = dragonLightTarget
+
+    const dragonLight2 = new THREE.DirectionalLight(0xffff00, 1)
+    dragonLight2.position.set(-2, 3, 12)
+    dragonLight2.target = dragonLightTarget
+
+    const dragonLight3 = new THREE.DirectionalLight(0xf44336, 1)
+    dragonLight3.position.set(0, 3, 10.2)
+    dragonLight3.target = dragonLightTarget
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+    this.controls.target = this.dragonGroup.position
+    this.controls.enabled = false
+
+    this.dragonGroup.add(
+      dragonModel,
+      dragonLight,
+      dragonLight2,
+      dragonLight3,
+      dragonLightTarget
+    )
+  }
   async loadGltfAsync(url) {
     const data = await this.gltfLoader.loadAsync(url)
     return data.scene
@@ -118,6 +168,20 @@ export class Scene3D {
         this.scene.add(this.light)
       } else {
         this.scene.remove(this.light)
+      }
+    }
+  }
+  debugToggleDragon() {
+    return (isShown) => {
+      if (isShown) {
+        this.scene.add(this.dragonGroup)
+        this.controls.enabled = true
+        this.camera.position.set(0, 2.5, 13)
+      } else {
+        this.scene.remove(this.dragonGroup)
+        this.controls.enabled = false
+        this.camera.position.set(0, 3, 10)
+        this.camera.lookAt(0, 0, 0)
       }
     }
   }
