@@ -42,8 +42,13 @@ export class Scene3D {
   initScene() {
     this.scene = new THREE.Scene()
     this.rgbeLoader.load(environmentUrl, (texture) => {
-      this.scene.background = texture
-      this.scene.environment = texture
+      const skyGeometry = new THREE.SphereGeometry(500, 60, 40)
+      const skyMaterial = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.BackSide,
+      })
+      const sky = new THREE.Mesh(skyGeometry, skyMaterial)
+      this.scene.add(sky)
     })
   }
   initCamera() {
