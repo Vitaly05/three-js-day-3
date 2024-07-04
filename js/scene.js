@@ -37,6 +37,7 @@ export class Scene3D {
     this.initShaderCube()
 
     this.addCameraMoveEffect()
+    this.addResizeEventListener()
   }
   initScene() {
     this.scene = new THREE.Scene()
@@ -211,6 +212,18 @@ export class Scene3D {
   async loadGltfAsync(url) {
     const data = await this.gltfLoader.loadAsync(url)
     return data.scene
+  }
+  addResizeEventListener() {
+    addEventListener('resize', () => {
+      this.width = window.innerWidth
+      this.height = window.innerHeight
+
+      this.aspectRatio = this.width / this.height
+      this.camera.aspect = this.aspectRatio
+      this.camera.updateProjectionMatrix()
+      this.renderer.setSize(this.width, this.height)
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    })
   }
   debugToggleGlobalLight() {
     return (isShown) => {
