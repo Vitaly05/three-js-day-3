@@ -103,13 +103,22 @@ export class Scene3D {
       30,
       particlesPosition,
       0.1,
-      0x290050,
+      0xffff00,
       particleTexture
     )
-    await this.spellBookParticles.initAsync(this.scene)
+    this.spellBookParticles.init(this.scene)
   }
   async loadGltfAsync(url) {
     const data = await this.gltfLoader.loadAsync(url)
     return data.scene
+  }
+  debugToggleGlobalLight() {
+    return (isShown) => {
+      if (isShown) {
+        this.scene.add(this.light)
+      } else {
+        this.scene.remove(this.light)
+      }
+    }
   }
 }
