@@ -14,6 +14,7 @@ import {
 } from '../data/urls'
 import { getRadFromAngle } from './helpers/angle'
 import { SpellBookParticles } from './particles/spellBookParticles'
+import { CameraMoveEffect } from './cameraMoveEffect'
 
 export class Scene3D {
   async initAsync() {
@@ -33,6 +34,8 @@ export class Scene3D {
     await this.initModelsAsync()
     await this.initBookParticlesAsync()
     await this.initDragonModelAsync()
+
+    this.addCameraMoveEffect()
   }
   initScene() {
     this.scene = new THREE.Scene()
@@ -158,6 +161,10 @@ export class Scene3D {
       dragonLightTarget
     )
   }
+  addCameraMoveEffect() {
+    this.cameraMoveEffect = new CameraMoveEffect(this.camera, 0.2, 0.1)
+    this.cameraMoveEffect.enable()
+  }
   async loadGltfAsync(url) {
     const data = await this.gltfLoader.loadAsync(url)
     return data.scene
@@ -177,11 +184,13 @@ export class Scene3D {
         this.scene.add(this.dragonGroup)
         this.controls.enabled = true
         this.camera.position.set(0, 2.5, 13)
+        this.cameraMoveEffect.disable()
       } else {
         this.scene.remove(this.dragonGroup)
         this.controls.enabled = false
         this.camera.position.set(0, 3, 10)
         this.camera.lookAt(0, 0, 0)
+        this.cameraMoveEffect.enable()
       }
     }
   }
