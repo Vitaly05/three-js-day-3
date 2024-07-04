@@ -34,6 +34,7 @@ export class Scene3D {
     await this.initModelsAsync()
     await this.initBookParticlesAsync()
     await this.initDragonModelAsync()
+    this.initShaderCube()
 
     this.addCameraMoveEffect()
   }
@@ -58,6 +59,10 @@ export class Scene3D {
   rendererAnimationCallback() {
     return () => {
       this.spellBookParticles?.updateParticles()
+      if (this.cubeWithShader) {
+        const time = performance.now()
+        this.cubeWithShader.material.uniforms.time.value = time * 0.005
+      }
 
       this.renderer.render(this.scene, this.camera)
     }
@@ -160,6 +165,44 @@ export class Scene3D {
       dragonLight3,
       dragonLightTarget
     )
+  }
+  initShaderCube() {
+    const vertexCount = 100 * 3
+    const positions = []
+    const colors = []
+
+    for (let i = 0; i < vertexCount; i++) {
+      positions.push(Math.random() - 0.5)
+      positions.push(Math.random() - 0.5)
+      positions.push(Math.random() - 0.5)
+
+      colors.push(Math.random() * 255)
+      colors.push(Math.random() * 255)
+      colors.push(Math.random() * 255)
+      colors.push(Math.random() * 255)
+    }
+
+    const positionAttribute = new THREE.Float32BufferAttribute(positions, 3)
+    const colorAttribute = new THREE.Uint8BufferAttribute(colors, 4)
+
+    colorAttribute.normalized = true // this will map the buffer values to 0.0f - +1.0f in the shader
+
+    const cubeGeometry = new THREE.BufferGeometry()
+    cubeGeometry.setAttribute('position', positionAttribute)
+    cubeGeometry.setAttribute('color', colorAttribute)
+
+    const cubeMaterial = new THREE.RawShaderMaterial({
+      uniforms: {
+        time: { value: 1.0 },
+      },
+      vertexShader: document.getElementById('vertexShader').textContent,
+      fragmentShader: document.getElementById('fragmentShader').textContent,
+      transparent: true,
+    })
+
+    this.cubeWithShader = new THREE.Mesh(cubeGeometry, cubeMaterial)
+    this.cubeWithShader.position.set(-2, 5, 5)
+    this.scene.add(this.cubeWithShader)
   }
   addCameraMoveEffect() {
     this.cameraMoveEffect = new CameraMoveEffect(this.camera, 0.2, 0.1)
